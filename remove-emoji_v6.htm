@@ -123,7 +123,7 @@
         }
         
         .options-content {
-            display: none;
+            display: block;
             padding: 15px;
             border-top: 1px solid #ddd;
         }
@@ -295,14 +295,10 @@
             const selectAllBtn = document.getElementById('select-all');
             const selectNoneBtn = document.getElementById('select-none');
             
-            // Toggle options visibility
+            // Toggle options visibility (disabled - always visible)
             toggleOptions.addEventListener('click', function(e) {
                 e.preventDefault();
-                console.log('Toggle clicked'); // Debug line
-                optionsContent.classList.toggle('show');
-                const isVisible = optionsContent.classList.contains('show');
-                console.log('Options visible:', isVisible); // Debug line
-                toggleOptions.innerHTML = isVisible ? '⚙️ Hide Options' : '⚙️ Emoji Range Options';
+                // Options are always visible now - could add collapse functionality later
             });
             
             // Select all/none functionality
