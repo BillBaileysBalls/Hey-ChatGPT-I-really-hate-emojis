@@ -1,0 +1,1 @@
+# Hey-ChatGPT-I-really-hate-emojis
