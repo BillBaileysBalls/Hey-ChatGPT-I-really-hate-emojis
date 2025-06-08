@@ -179,7 +179,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>ChatGPT, I f***ing hate emojis.</h1>
+        <h1>🚫 Emoji Remover Tool</h1>
         
         <div class="textarea-group">
             <label for="input-text">Paste your text with emojis here:</label>
@@ -296,10 +296,13 @@
             const selectNoneBtn = document.getElementById('select-none');
             
             // Toggle options visibility
-            toggleOptions.addEventListener('click', function() {
+            toggleOptions.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Toggle clicked'); // Debug line
                 optionsContent.classList.toggle('show');
                 const isVisible = optionsContent.classList.contains('show');
-                toggleOptions.textContent = isVisible ? '⚙️ Hide Options' : '⚙️ Emoji Range Options';
+                console.log('Options visible:', isVisible); // Debug line
+                toggleOptions.innerHTML = isVisible ? '⚙️ Hide Options' : '⚙️ Emoji Range Options';
             });
             
             // Select all/none functionality
