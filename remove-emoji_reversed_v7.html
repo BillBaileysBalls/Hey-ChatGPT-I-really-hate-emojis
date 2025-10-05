@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="favicon.ico" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Remover</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .textarea-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .button-group {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .copy-btn {
+            background: #28a745;
+        }
+        
+        .copy-btn:hover {
+            background: #1e7e34;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        
+        .options-section {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        
+        .toggle-options {
+            width: 100%;
+            background: #f8f9fa;
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        
+        .toggle-options:hover {
+            background: #e9ecef;
+        }
+        
+        .options-content {
+            display: none;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .options-content.show {
+            display: block;
+        }
+        
+        .options-header {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .select-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .select-btn:hover {
+            background: #5a6268;
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 8px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #495057;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .checkbox-item:hover {
+            background: rgba(0,123,255,0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚫 Emoji Remover Tool</h1>
+        
+        <div class="textarea-group">
+            <label for="input-text">Paste your text with emojis here:</label>
+            <textarea id="input-text" placeholder="Paste your text here... 😊✨🎉"></textarea>
+        </div>
+
+        <div class="button-group">
+            <button id="process-btn">Remove Emojis</button>
+        </div>
+        
+        <div class="textarea-group">
+            <label for="output-text">Clean text (emojis removed):</label>
+            <textarea id="output-text" placeholder="Processed text will appear here..." readonly></textarea>
+        </div>
+        
+        <div class="button-group">
+            <button id="copy-btn" class="copy-btn">Copy Result</button>
+        </div>
+        
+        <div class="info">
+            <strong>How to use:</strong> Paste your text in the top box, click "Remove Emojis", then copy the cleaned result from the bottom box.
+        </div>
+        
+        <div class="options-section">
+            <button type="button" class="toggle-options" id="toggle-options">⚙️ Emoji Range Options</button>
+            <div class="options-content" id="options-content">
+                <div class="options-header">
+                    <button type="button" class="select-btn" id="select-all">Select All</button>
+                    <button type="button" class="select-btn" id="select-none">Select None</button>
+                </div>
+                <div class="checkbox-grid">
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F600-1F64F" checked>
+                        <span>Emoticons (😀-🙏)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F300-1F5FF" checked>
+                        <span>Misc Symbols (🌀-🗿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F680-1F6FF" checked>
+                        <span>Transport & Map (🚀-🛿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F700-1F77F" checked>
+                        <span>Alchemical (🜀-🝿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F780-1F7FF" checked>
+                        <span>Geometric Shapes Extended (🞀-🟿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F800-1F8FF" checked>
+                        <span>Supplemental Arrows-C (🠀-🣿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F900-1F9FF" checked>
+                        <span>Supplemental Symbols (🤀-🧿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1FA00-1FA6F" checked>
+                        <span>Chess Symbols (🨀-🩯)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1FA70-1FAFF" checked>
+                        <span>Symbols Extended-A (🩰-🫿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="2600-26FF" checked>
+                        <span>Miscellaneous Symbols (☀-⛿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="2700-27BF" checked>
+                        <span>Dingbats (✀-➿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="2300-23FF" checked>
+                        <span>Miscellaneous Technical (⌀-⏿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="FE00-FE0F" checked>
+                        <span>Variation Selectors</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F000-1F02F" checked>
+                        <span>Mahjong Tiles (🀀-🀯)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F0A0-1F0FF" checked>
+                        <span>Playing Cards (🂠-🃿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1F100-1F1FF" checked>
+                        <span>Enclosed Characters (🄀-🇿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="1FB00-1FFFF" checked>
+                        <span>Extended Ranges (🬀-🿿)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="ZWJ" checked>
+                        <span>Zero Width Joiner</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="EmojiModifiers" checked>
+                        <span>Emoji Modifiers (Skin Tones)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="MiscSymbols" checked>
+                        <span>Misc Symbols (⬛⬜)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const processBtn = document.getElementById('process-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const inputText = document.getElementById('input-text');
+            const outputText = document.getElementById('output-text');
+            const toggleOptions = document.getElementById('toggle-options');
+            const optionsContent = document.getElementById('options-content');
+            const selectAllBtn = document.getElementById('select-all');
+            const selectNoneBtn = document.getElementById('select-none');
+            
+            // Toggle options visibility
+            toggleOptions.addEventListener('click', function(e) {
+                e.preventDefault();
+                optionsContent.classList.toggle('show');
+            });
+            
+            // Select all/none functionality
+            selectAllBtn.addEventListener('click', function() {
+                document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => cb.checked = true);
+            });
+            
+            selectNoneBtn.addEventListener('click', function() {
+                document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+            });
+            
+            // Build regex pattern based on selected checkboxes
+            function buildEmojiRegex() {
+                const patterns = [];
+                const rangeMap = {
+                    '1F600-1F64F': '\\u{1F600}-\\u{1F64F}',
+                    '1F300-1F5FF': '\\u{1F300}-\\u{1F5FF}',
+                    '1F680-1F6FF': '\\u{1F680}-\\u{1F6FF}',
+                    '1F700-1F77F': '\\u{1F700}-\\u{1F77F}',
+                    '1F780-1F7FF': '\\u{1F780}-\\u{1F7FF}',
+                    '1F800-1F8FF': '\\u{1F800}-\\u{1F8FF}',
+                    '1F900-1F9FF': '\\u{1F900}-\\u{1F9FF}',
+                    '1FA00-1FA6F': '\\u{1FA00}-\\u{1FA6F}',
+                    '1FA70-1FAFF': '\\u{1FA70}-\\u{1FAFF}',
+                    '2600-26FF': '\\u{2600}-\\u{26FF}',
+                    '2700-27BF': '\\u{2700}-\\u{27BF}',
+                    '2300-23FF': '\\u{2300}-\\u{23FF}',
+                    'FE00-FE0F': '\\u{FE00}-\\u{FE0F}',
+                    '1F000-1F02F': '\\u{1F000}-\\u{1F02F}',
+                    '1F0A0-1F0FF': '\\u{1F0A0}-\\u{1F0FF}',
+                    '1F100-1F1FF': '\\u{1F100}-\\u{1F1FF}',
+                    '1FB00-1FFFF': '\\u{1FB00}-\\u{1FBFF}\\u{1FC00}-\\u{1FCFF}\\u{1FD00}-\\u{1FDFF}\\u{1FE00}-\\u{1FEFF}\\u{1FF00}-\\u{1FFFF}',
+                    'ZWJ': '\\u{200D}',
+                    'EmojiModifiers': '\\u{1F3FB}-\\u{1F3FF}',
+                    'MiscSymbols': '\\u{2B1B}\\u{2B1C}\\u{25FE}\\u{25FD}\\u{25AA}\\u{25AB}'
+                };
+                
+                document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked').forEach(cb => {
+                    const range = cb.dataset.range;
+                    if (rangeMap[range]) {
+                        patterns.push(rangeMap[range]);
+                    }
+                });
+                
+                if (patterns.length === 0) return null;
+                
+                // Create pattern that matches emojis with optional surrounding whitespace
+                const emojiPattern = `[${patterns.join('')}]`;
+                return new RegExp(emojiPattern, 'gu');
+            }
+            
+            processBtn.addEventListener('click', function() {
+                const input = inputText.value;
+                if (!input.trim()) {
+                    alert('Please paste some text first!');
+                    return;
+                }
+                
+                const emojiRegex = buildEmojiRegex();
+                if (!emojiRegex) {
+                    alert('Please select at least one emoji range to remove!');
+                    return;
+                }
+                
+                // Remove emojis only, preserving all original whitespace
+                let output = input.replace(emojiRegex, '');
+                
+                // Only clean up excessive spaces (3+ consecutive spaces) but preserve line breaks
+                output = output.replace(/ {3,}/g, '  ');
+                
+                outputText.value = output;
+                
+                // Show feedback
+                processBtn.textContent = 'Processed! ✓';
+                processBtn.style.background = '#28a745';
+                setTimeout(() => {
+                    processBtn.textContent = 'Remove Emojis';
+                    processBtn.style.background = '#007bff';
+                }, 2000);
+            });
+            
+            copyBtn.addEventListener('click', function() {
+                if (!outputText.value.trim()) {
+                    alert('No processed text to copy! Please remove emojis first.');
+                    return;
+                }
+                
+                outputText.select();
+                outputText.setSelectionRange(0, 99999);
+                
+                try {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(outputText.value).then(() => {
+                            copyBtn.textContent = 'Copied! ✓';
+                            setTimeout(() => {
+                                copyBtn.textContent = 'Copy Result';
+                            }, 2000);
+                        }).catch(() => {
+                            fallbackCopy();
+                        });
+                    } else {
+                        fallbackCopy();
+                    }
+                } catch (err) {
+                    fallbackCopy();
+                }
+                
+                function fallbackCopy() {
+                    try {
+                        document.execCommand('copy');
+                        copyBtn.textContent = 'Copied! ✓';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'Copy Result';
+                        }, 2000);
+                    } catch (err) {
+                        alert('Copy failed. Please select the text manually and copy with Ctrl+C');
+                    }
+                }
+            });
+            
+            // Allow Ctrl+Enter to process text
+            inputText.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    processBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
