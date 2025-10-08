@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    <link rel="icon" href="favicon.ico" />
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -123,7 +124,7 @@
         }
         
         .options-content {
-            display: block;
+            display: none;
             padding: 15px;
             border-top: 1px solid #ddd;
         }
@@ -178,13 +179,29 @@
     </style>
 </head>
 <body>
-    
     <div class="container">
-        <h1>Hey ChatGPT, I really hate ****ing emojis!</h1>
+        <h1>🚫 Emoji Remover Tool</h1>
         
         <div class="textarea-group">
             <label for="input-text">Paste your text with emojis here:</label>
             <textarea id="input-text" placeholder="Paste your text here... 😊✨🎉"></textarea>
+        </div>
+
+        <div class="button-group">
+            <button id="process-btn">Remove Emojis</button>
+        </div>
+        
+        <div class="textarea-group">
+            <label for="output-text">Clean text (emojis removed):</label>
+            <textarea id="output-text" placeholder="Processed text will appear here..." readonly></textarea>
+        </div>
+        
+        <div class="button-group">
+            <button id="copy-btn" class="copy-btn">Copy Result</button>
+        </div>
+        
+        <div class="info">
+            <strong>How to use:</strong> Paste your text in the top box, click "Remove Emojis", then copy the cleaned result from the bottom box.
         </div>
         
         <div class="options-section">
@@ -256,35 +273,30 @@
                         <span>Playing Cards (🂠-🃿)</span>
                     </label>
                     <label class="checkbox-item">
-                        <input type="checkbox" data-range="1F100-1F64F" checked>
-                        <span>Enclosed Characters (🄀-🙏)</span>
+                        <input type="checkbox" data-range="1F100-1F1FF" checked>
+                        <span>Enclosed Characters (🄀-🇿)</span>
                     </label>
                     <label class="checkbox-item">
                         <input type="checkbox" data-range="1FB00-1FFFF" checked>
                         <span>Extended Ranges (🬀-🿿)</span>
                     </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="ZWJ" checked>
+                        <span>Zero Width Joiner</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="EmojiModifiers" checked>
+                        <span>Emoji Modifiers (Skin Tones)</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" data-range="MiscSymbols" checked>
+                        <span>Misc Symbols (⬛⬜)</span>
+                    </label>
                 </div>
             </div>
         </div>
-        
-        <div class="button-group">
-            <button id="process-btn">Remove Emojis</button>
-        </div>
-        
-        <div class="textarea-group">
-            <label for="output-text">Clean text (emojis removed):</label>
-            <textarea id="output-text" placeholder="Processed text will appear here..." readonly></textarea>
-        </div>
-        
-        <div class="button-group">
-            <button id="copy-btn" class="copy-btn">Copy Result</button>
-        </div>
-        
-        <div class="info">
-            <strong>How to use:</strong> Paste your text in the top box, click "Remove Emojis", then copy the cleaned result from the bottom box.
-        </div>
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const processBtn = document.getElementById('process-btn');
@@ -296,10 +308,10 @@
             const selectAllBtn = document.getElementById('select-all');
             const selectNoneBtn = document.getElementById('select-none');
             
-            // Toggle options visibility (disabled - always visible)
+            // Toggle options visibility
             toggleOptions.addEventListener('click', function(e) {
                 e.preventDefault();
-                // Options are always visible now - could add collapse functionality later
+                optionsContent.classList.toggle('show');
             });
             
             // Select all/none functionality
@@ -313,7 +325,7 @@
             
             // Build regex pattern based on selected checkboxes
             function buildEmojiRegex() {
-                const ranges = [];
+                const patterns = [];
                 const rangeMap = {
                     '1F600-1F64F': '\\u{1F600}-\\u{1F64F}',
                     '1F300-1F5FF': '\\u{1F300}-\\u{1F5FF}',
@@ -330,18 +342,25 @@
                     'FE00-FE0F': '\\u{FE00}-\\u{FE0F}',
                     '1F000-1F02F': '\\u{1F000}-\\u{1F02F}',
                     '1F0A0-1F0FF': '\\u{1F0A0}-\\u{1F0FF}',
-                    '1F100-1F64F': '\\u{1F100}-\\u{1F64F}',
-                    '1FB00-1FFFF': '\\u{1FB00}-\\u{1FBFF}\\u{1FC00}-\\u{1FCFF}\\u{1FD00}-\\u{1FDFF}\\u{1FE00}-\\u{1FEFF}\\u{1FF00}-\\u{1FFFF}'
+                    '1F100-1F1FF': '\\u{1F100}-\\u{1F1FF}',
+                    '1FB00-1FFFF': '\\u{1FB00}-\\u{1FBFF}\\u{1FC00}-\\u{1FCFF}\\u{1FD00}-\\u{1FDFF}\\u{1FE00}-\\u{1FEFF}\\u{1FF00}-\\u{1FFFF}',
+                    'ZWJ': '\\u{200D}',
+                    'EmojiModifiers': '\\u{1F3FB}-\\u{1F3FF}',
+                    'MiscSymbols': '\\u{2B1B}\\u{2B1C}\\u{25FE}\\u{25FD}\\u{25AA}\\u{25AB}'
                 };
                 
                 document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked').forEach(cb => {
                     const range = cb.dataset.range;
                     if (rangeMap[range]) {
-                        ranges.push(rangeMap[range]);
+                        patterns.push(rangeMap[range]);
                     }
                 });
                 
-                return ranges.length > 0 ? new RegExp(`(\\s*)([${ranges.join('')}]+)(\\s*)`, 'gu') : null;
+                if (patterns.length === 0) return null;
+                
+                // Create pattern that matches emojis with optional surrounding whitespace
+                const emojiPattern = `[${patterns.join('')}]`;
+                return new RegExp(emojiPattern, 'gu');
             }
             
             processBtn.addEventListener('click', function() {
@@ -357,18 +376,11 @@
                     return;
                 }
                 
-                // Remove emojis and fix spacing in one pass
-                const output = input.replace(emojiRegex, function(match, spaceBefore, emojis, spaceAfter) {
-                    // If there were spaces both before and after the emoji, keep one space
-                    // If there was only space on one side or no spaces, return appropriate spacing
-                    if (spaceBefore && spaceAfter) {
-                        return ' ';
-                    } else if (spaceBefore || spaceAfter) {
-                        return spaceBefore || spaceAfter;
-                    } else {
-                        return '';
-                    }
-                });
+                // Remove emojis only, preserving all original whitespace
+                let output = input.replace(emojiRegex, '');
+                
+                // Only clean up excessive spaces (3+ consecutive spaces) but preserve line breaks
+                output = output.replace(/ {3,}/g, '  ');
                 
                 outputText.value = output;
                 
@@ -388,28 +400,39 @@
                 }
                 
                 outputText.select();
-                outputText.setSelectionRange(0, 99999); // For mobile devices
+                outputText.setSelectionRange(0, 99999);
                 
                 try {
-                    document.execCommand('copy');
-                    copyBtn.textContent = 'Copied! ✓';
-                    setTimeout(() => {
-                        copyBtn.textContent = 'Copy Result';
-                    }, 2000);
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(outputText.value).then(() => {
+                            copyBtn.textContent = 'Copied! ✓';
+                            setTimeout(() => {
+                                copyBtn.textContent = 'Copy Result';
+                            }, 2000);
+                        }).catch(() => {
+                            fallbackCopy();
+                        });
+                    } else {
+                        fallbackCopy();
+                    }
                 } catch (err) {
-                    // Fallback for modern browsers
-                    navigator.clipboard.writeText(outputText.value).then(() => {
+                    fallbackCopy();
+                }
+                
+                function fallbackCopy() {
+                    try {
+                        document.execCommand('copy');
                         copyBtn.textContent = 'Copied! ✓';
                         setTimeout(() => {
                             copyBtn.textContent = 'Copy Result';
                         }, 2000);
-                    }).catch(() => {
+                    } catch (err) {
                         alert('Copy failed. Please select the text manually and copy with Ctrl+C');
-                    });
+                    }
                 }
             });
             
-            // Allow Enter key to process text
+            // Allow Ctrl+Enter to process text
             inputText.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key === 'Enter') {
                     processBtn.click();
@@ -418,4 +441,5 @@
         });
     </script>
 </body>
+
 </html>
